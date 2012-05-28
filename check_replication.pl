@@ -16,11 +16,6 @@ $np->add_arg (
     required => 1,
     );
 $np->add_arg (
-    spec => 'slave|S=s',
-    help => 'Specify slave server DSN',
-    required => 1,
-    );
-$np->add_arg (
     spec => 'master_user|U=s',
     help => 'Spacify master server user',
     );
@@ -28,6 +23,11 @@ $np->add_arg (
     spec => 'master_password|P=s',
     help => 'Spacify master server password',
     default => '',
+    );
+$np->add_arg (
+    spec => 'slave|S=s',
+    help => 'Specify slave server DSN',
+    required => 1,
     );
 $np->add_arg (
     spec => 'slave_user|u=s',
@@ -40,12 +40,12 @@ $np->add_arg (
     );
 $np->add_arg (
     spec => 'warning|W=s',
-    help => 'Specify HTTP username',
+    help => 'Warning lag (default: 1024)',
     default => '1024',
     );
 $np->add_arg (
     spec => 'critical|C=s',
-    help => 'Specify HTTP username',
+    help => 'Critical lag (default: 4096)',
     default => '4096',
     );
 $np->getopts();
