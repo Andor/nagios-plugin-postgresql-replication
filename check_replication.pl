@@ -127,4 +127,4 @@ my $code = $np->check_threshold (
     critical => $np->opts->critical,
     );
 
-$np->nagios_exit( $code, "Receive lag: $diff_receive, replay lag: $diff_replay" );
+$np->nagios_exit( $code, "Receive lag: ${diff_receive}kb, replay lag: ${diff_replay}kb" );
