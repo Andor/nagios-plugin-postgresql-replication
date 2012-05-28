@@ -40,12 +40,12 @@ $np->add_arg (
     );
 $np->add_arg (
     spec => 'warning|W=s',
-    help => 'Warning lag (default: 1024)',
+    help => 'Warning lag, in kb (default: 1024)',
     default => '1024',
     );
 $np->add_arg (
     spec => 'critical|C=s',
-    help => 'Critical lag (default: 4096)',
+    help => 'Critical lag, in kb (default: 4096)',
     default => '4096',
     );
 $np->getopts();
@@ -115,8 +115,9 @@ verbose "master: $master_xlog, $master_bytes;\n";
 verbose "slave receive: $slave_xlog_receive $slave_bytes_receive;\n";
 verbose "slave replay: $slave_xlog_replay $slave_bytes_replay;\n";
 
-my $diff_receive = int($master_bytes - $slave_bytes_receive);
-my $diff_replay = int($master_bytes - $slave_bytes_replay);
+# lags in kilobytes
+my $diff_receive = int(($master_bytes - $slave_bytes_receive)/1024);
+my $diff_replay = int(($master_bytes - $slave_bytes_replay)/1024);
 
 verbose "diff receive: $diff_receive; diff replay: $diff_replay;\n";
 
