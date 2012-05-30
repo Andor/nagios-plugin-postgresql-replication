@@ -135,7 +135,7 @@ my $code_replay = $np->check_threshold (
         critical => $np->opts->critical,
     );
 
-$np->add_message ( $code_receive>$code_replay?$code_receive:$code_replay, "Receive lag: ${diff_receive}kb, replay lag: ${diff_replay}kb" );
+$np->add_message ( max($code_receive, $code_replay), "Receive lag: ${diff_receive}kb, replay lag: ${diff_replay}kb" );
 
 my ( $code, $message ) = $np->check_messages();
 $np->nagios_exit ( $code, $message );
