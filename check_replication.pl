@@ -121,10 +121,21 @@ my $diff_replay = int(($master_bytes - $slave_bytes_replay)/1024);
 
 verbose "diff receive: $diff_receive; diff replay: $diff_replay;\n";
 
-my $code = $np->check_threshold (
+# check for receive lag
+my $code_receive = $np->check_threshold (
     check => $diff_receive,
     warning => $np->opts->warning,
     critical => $np->opts->critical,
     );
 
-$np->nagios_exit( $code, "Receive lag: ${diff_receive}kb, replay lag: ${diff_replay}kb" );
+# check for replay lag
+my $code_replay = $np->check_threshold (
+        check => $diff_replay,
+        warning => $np->opts->warning,
+        critical => $np->opts->critical,
+    );
+
+$np->add_message ( $code_receive>$code_replay?$code_receive:$code_replay, "Receive lag: ${diff_receive}kb, replay lag: ${diff_replay}kb" );
+
+my ( $code, $message ) = $np->check_messages();
+$np->nagios_exit ( $code, $message );
