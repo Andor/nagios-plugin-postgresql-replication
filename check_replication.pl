@@ -80,9 +80,9 @@ my $slave = DBI->connect (
 
 # queries
 my ($master_current, $slave_receive, $slave_replay);
-my $master_query = 'SELECT pg_current_xlog_location()';
 my $slave_receive_query = 'SELECT pg_last_xlog_receive_location()';
 my $slave_replay_query = 'SELECT pg_last_xlog_replay_location()';
+my $master_query = 'SELECT pg_current_xlog_location()';
 
 verbose "running '$master_query' on master\n";
 $master_current = $master->selectall_arrayref( $master_query );
