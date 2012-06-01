@@ -133,7 +133,9 @@ if ( defined $slave_xlog_receive ) {
     $np->add_message ( $code_receive, "Receive lag: ${diff_receive}kb;" );
 } else {
     if ( defined $slave_xlog_replay ) {
-        $np->add_message( WARNING, 'Recover from WAL;' );
+        for (OK, WARNING, CRITICAL) {
+            $np->add_message( $_, 'Replay from WAL;' );
+        }
     } else {
         $np->nagios_exit( CRITICAL, 'Slave server has no replication or wrong version;' );
     }
