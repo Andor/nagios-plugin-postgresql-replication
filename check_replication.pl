@@ -4,7 +4,6 @@ use strict;
 use warnings;
 use Nagios::Plugin;
 use DBI;
-use Data::Dumper;
 
 my $np = Nagios::Plugin->new(
     usage => 'Usage: %s --master --slave',
@@ -69,14 +68,19 @@ my $master = DBI->connect (
     'dbi:Pg:'.$np->opts->master,
     $np->opts->master_user,
     $np->opts->master_password,
-    { RaiseError => 1 }
     );
+if (!$master) {
+    $np->nagios_exit( CRITICAL, $DBI::errstr);
+}
+
 my $slave = DBI->connect (
     'dbi:Pg:'.$np->opts->slave,
     $np->opts->slave_user,
     $np->opts->slave_password,
-    { RaiseError => 1 }
     );
+if (!$slave) {
+    $np->nagios_exit( CRITICAL, $DBI::errstr);
+}
 
 # queries
 my ($master_current, $slave_receive, $slave_replay);
