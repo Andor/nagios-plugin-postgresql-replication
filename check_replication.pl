@@ -103,18 +103,19 @@ $slave_xlog_receive = $slave_receive->[0][0];
 $slave_xlog_replay = $slave_replay->[0][0];
 
 my ($master_bytes, $slave_bytes_receive, $slave_bytes_replay);
-
-if ( !defined $master_xlog ) {
-    $np->nagios_exit( CRITICAL, 'Master server has no replication or wrong version;' );
-}
-
-# convert to bytes
-$master_bytes = xlog_to_bytes($master_xlog);
-verbose "master: $master_xlog, $master_bytes;\n";
-
 my ($diff_receive, $code_receive) = (0,0);
 my ($diff_replay, $code_replay) = (0,0);
 
+# process result from master server
+if ( defined $master_xlog ) {
+    # convert to bytes
+    $master_bytes = xlog_to_bytes($master_xlog);
+    verbose "master: $master_xlog, $master_bytes;\n";
+} else {
+    $np->nagios_exit( CRITICAL, 'Master server has no replication or wrong version;' );
+}
+
+# process receive status from slave server
 if ( defined $slave_xlog_receive ) {
     # convert to bytes
     $slave_bytes_receive = xlog_to_bytes($slave_xlog_receive);
@@ -133,6 +134,7 @@ if ( defined $slave_xlog_receive ) {
     $np->add_message ( $code_receive, "Receive lag: ${diff_receive}kb;" );
 } else {
     if ( defined $slave_xlog_replay ) {
+        # print on all statuses
         for (OK, WARNING, CRITICAL) {
             $np->add_message( $_, 'Replay from WAL;' );
         }
@@ -141,6 +143,7 @@ if ( defined $slave_xlog_receive ) {
     }
 }
 
+# process replay status from slave server
 if ( defined $slave_xlog_replay ) {
     # convert to bytes
     $slave_bytes_replay = xlog_to_bytes($slave_xlog_replay);
@@ -157,6 +160,10 @@ if ( defined $slave_xlog_replay ) {
         critical => $np->opts->critical,
         );
     $np->add_message ( $code_replay, "Replay lag: ${diff_replay}kb;" );
+} else {
+    for (OK, WARNING, CRITICAL) {
+        $np->add_message ( $_, 'Wrong replay and receive statuses;' );
+    }
 }
 
 my ( $code, $message ) = $np->check_messages();
