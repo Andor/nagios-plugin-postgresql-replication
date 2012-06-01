@@ -70,7 +70,7 @@ my $master = DBI->connect (
     $np->opts->master_password,
     );
 if (!$master) {
-    $np->nagios_exit( CRITICAL, $DBI::errstr);
+    $np->nagios_exit( CRITICAL, 'Master: '.$DBI::errstr);
 }
 
 my $slave = DBI->connect (
@@ -79,7 +79,7 @@ my $slave = DBI->connect (
     $np->opts->slave_password,
     );
 if (!$slave) {
-    $np->nagios_exit( CRITICAL, $DBI::errstr);
+    $np->nagios_exit( CRITICAL, 'Slave: '.$DBI::errstr);
 }
 
 # queries
