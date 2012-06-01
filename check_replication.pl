@@ -102,44 +102,60 @@ $master_xlog = $master_current->[0][0];
 $slave_xlog_receive = $slave_receive->[0][0];
 $slave_xlog_replay = $slave_replay->[0][0];
 
+my ($master_bytes, $slave_bytes_receive, $slave_bytes_replay);
+
 if ( !defined $master_xlog ) {
     $np->nagios_exit( CRITICAL, 'Master server has no replication or wrong version;' );
 }
-if ( !defined $slave_xlog_receive || !defined $slave_xlog_replay ) {
-    $np->nagios_exit( CRITICAL, 'Slave server has no replication or wrong version;' );
+
+# convert to bytes
+$master_bytes = xlog_to_bytes($master_xlog);
+verbose "master: $master_xlog, $master_bytes;\n";
+
+my ($diff_receive, $code_receive) = (0,0);
+my ($diff_replay, $code_replay) = (0,0);
+
+if ( defined $slave_xlog_receive ) {
+    # convert to bytes
+    $slave_bytes_receive = xlog_to_bytes($slave_xlog_receive);
+    verbose "slave receive: $slave_xlog_receive $slave_bytes_receive;\n";
+
+    # and diff to kilobytes
+    $diff_receive = int(($master_bytes - $slave_bytes_receive)/1024);
+    verbose "diff receive: $diff_receive;\n";
+
+    # check for receive lag
+    $code_receive = $np->check_threshold (
+        check => $diff_receive,
+        warning => $np->opts->warning,
+        critical => $np->opts->critical,
+        );
+    $np->add_message ( $code_receive, "Receive lag: ${diff_receive}kb;" );
+} else {
+    if ( defined $slave_xlog_replay ) {
+        $np->add_message( WARNING, 'Recover from WAL;' );
+    } else {
+        $np->nagios_exit( CRITICAL, 'Slave server has no replication or wrong version;' );
+    }
 }
 
-# convert values to bytes
-my ($master_bytes, $slave_bytes_receive, $slave_bytes_replay);
-$master_bytes = xlog_to_bytes($master_xlog);
-$slave_bytes_receive = xlog_to_bytes($slave_xlog_receive);
-$slave_bytes_replay = xlog_to_bytes($slave_xlog_replay);
+if ( defined $slave_xlog_replay ) {
+    # convert to bytes
+    $slave_bytes_replay = xlog_to_bytes($slave_xlog_replay);
+    verbose "slave replay: $slave_xlog_replay $slave_bytes_replay;\n";
 
-verbose "master: $master_xlog, $master_bytes;\n";
-verbose "slave receive: $slave_xlog_receive $slave_bytes_receive;\n";
-verbose "slave replay: $slave_xlog_replay $slave_bytes_replay;\n";
+    # and diff to kilobytes
+    $diff_replay = int(($master_bytes - $slave_bytes_replay)/1024);
+    verbose "diff replay: $diff_replay;\n";
 
-# lags in kilobytes
-my $diff_receive = int(($master_bytes - $slave_bytes_receive)/1024);
-my $diff_replay = int(($master_bytes - $slave_bytes_replay)/1024);
-
-verbose "diff receive: $diff_receive; diff replay: $diff_replay;\n";
-
-# check for receive lag
-my $code_receive = $np->check_threshold (
-    check => $diff_receive,
-    warning => $np->opts->warning,
-    critical => $np->opts->critical,
-    );
-
-# check for replay lag
-my $code_replay = $np->check_threshold (
+    # check for replay lag
+    $code_replay = $np->check_threshold (
         check => $diff_replay,
         warning => $np->opts->warning,
         critical => $np->opts->critical,
-    );
-
-$np->add_message ( max($code_receive, $code_replay), "Receive lag: ${diff_receive}kb, replay lag: ${diff_replay}kb" );
+        );
+    $np->add_message ( $code_replay, "Replay lag: ${diff_replay}kb;" );
+}
 
 my ( $code, $message ) = $np->check_messages();
 $np->nagios_exit ( $code, $message );
