@@ -15,6 +15,11 @@ $np->add_arg (
     required => 1,
     );
 $np->add_arg (
+    spec => 'master_port=s',
+    help => 'Specify master server port',
+    default => '5432',
+    );
+$np->add_arg (
     spec => 'master_user|U=s',
     help => 'Specify master server user',
     );
@@ -27,6 +32,11 @@ $np->add_arg (
     spec => 'slave|S=s',
     help => 'Specify slave server hostname',
     required => 1,
+    );
+$np->add_arg (
+    spec => 'slave_port=s',
+    help => 'Specify slave server port',
+    default => '5432',
     );
 $np->add_arg (
     spec => 'slave_user|u=s',
@@ -65,7 +75,7 @@ sub xlog_to_bytes {
 }
 
 my $master = DBI->connect (
-    'dbi:Pg:host='.$np->opts->master,
+    'dbi:Pg:host='.$np->opts->master.';port='.$np->opts->master_port,
     $np->opts->master_user,
     $np->opts->master_password,
     );
@@ -74,7 +84,7 @@ if (!$master) {
 }
 
 my $slave = DBI->connect (
-    'dbi:Pg:host='.$np->opts->slave,
+    'dbi:Pg:host='.$np->opts->slave.';port='.$np->opts->slave_port,
     $np->opts->slave_user,
     $np->opts->slave_password,
     );
