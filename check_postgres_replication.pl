@@ -142,6 +142,14 @@ if ( defined $slave_xlog_receive ) {
         critical => $np->opts->critical,
         );
     $np->add_message ( $code_receive, "Receive lag: ${diff_receive}kb;" );
+    # add performance data
+    $np->add_perfdata (
+        label => 'receive_lag',
+        value => $diff_receive,
+        uom => 'kB',
+        warning => $np->opts->warning,
+        critical => $np->opts->critical,
+        )
 } else {
     if ( defined $slave_xlog_replay ) {
         # print on all statuses
@@ -170,6 +178,14 @@ if ( defined $slave_xlog_replay ) {
         critical => $np->opts->critical,
         );
     $np->add_message ( $code_replay, "Replay lag: ${diff_replay}kb;" );
+    # add performance data
+    $np->add_perfdata (
+        label => 'receive_lag',
+        value => $diff_receive,
+        uom => 'kB',
+        warning => $np->opts->warning,
+        critical => $np->opts->critical,
+        )
 } else {
     for (OK, WARNING, CRITICAL) {
         $np->add_message ( $_, 'Wrong replay and receive statuses;' );
