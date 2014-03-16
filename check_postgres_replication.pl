@@ -11,30 +11,30 @@ my $np = Nagios::Plugin->new(
 
 $np->add_arg (
     spec => 'master|M=s',
-    help => 'Specify master server DSN',
+    help => 'Specify master server hostname',
     required => 1,
     );
 $np->add_arg (
     spec => 'master_user|U=s',
-    help => 'Spacify master server user',
+    help => 'Specify master server user',
     );
 $np->add_arg (
     spec => 'master_password|P=s',
-    help => 'Spacify master server password',
+    help => 'Specify master server password',
     default => '',
     );
 $np->add_arg (
     spec => 'slave|S=s',
-    help => 'Specify slave server DSN',
+    help => 'Specify slave server hostname',
     required => 1,
     );
 $np->add_arg (
     spec => 'slave_user|u=s',
-    help => 'Spacify slave server user',
+    help => 'Specify slave server user',
     );
 $np->add_arg (
     spec => 'slave_password|p=s',
-    help => 'Spacify slave server password',
+    help => 'Specify slave server password',
     default => '',
     );
 $np->add_arg (
