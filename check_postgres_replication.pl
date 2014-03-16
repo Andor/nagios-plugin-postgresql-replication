@@ -65,7 +65,7 @@ sub xlog_to_bytes {
 }
 
 my $master = DBI->connect (
-    'dbi:Pg:'.$np->opts->master,
+    'dbi:Pg:host='.$np->opts->master,
     $np->opts->master_user,
     $np->opts->master_password,
     );
@@ -74,7 +74,7 @@ if (!$master) {
 }
 
 my $slave = DBI->connect (
-    'dbi:Pg:'.$np->opts->slave,
+    'dbi:Pg:host='.$np->opts->slave,
     $np->opts->slave_user,
     $np->opts->slave_password,
     );
