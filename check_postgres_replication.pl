@@ -11,30 +11,40 @@ my $np = Nagios::Plugin->new(
 
 $np->add_arg (
     spec => 'master|M=s',
-    help => 'Specify master server DSN',
+    help => 'Specify master server hostname',
     required => 1,
     );
 $np->add_arg (
+    spec => 'master_port=s',
+    help => 'Specify master server port',
+    default => '5432',
+    );
+$np->add_arg (
     spec => 'master_user|U=s',
-    help => 'Spacify master server user',
+    help => 'Specify master server user',
     );
 $np->add_arg (
     spec => 'master_password|P=s',
-    help => 'Spacify master server password',
+    help => 'Specify master server password',
     default => '',
     );
 $np->add_arg (
     spec => 'slave|S=s',
-    help => 'Specify slave server DSN',
+    help => 'Specify slave server hostname',
     required => 1,
     );
 $np->add_arg (
+    spec => 'slave_port=s',
+    help => 'Specify slave server port',
+    default => '5432',
+    );
+$np->add_arg (
     spec => 'slave_user|u=s',
-    help => 'Spacify slave server user',
+    help => 'Specify slave server user',
     );
 $np->add_arg (
     spec => 'slave_password|p=s',
-    help => 'Spacify slave server password',
+    help => 'Specify slave server password',
     default => '',
     );
 $np->add_arg (
@@ -65,7 +75,7 @@ sub xlog_to_bytes {
 }
 
 my $master = DBI->connect (
-    'dbi:Pg:'.$np->opts->master,
+    'dbi:Pg:host='.$np->opts->master.';port='.$np->opts->master_port,
     $np->opts->master_user,
     $np->opts->master_password,
     );
@@ -74,7 +84,7 @@ if (!$master) {
 }
 
 my $slave = DBI->connect (
-    'dbi:Pg:'.$np->opts->slave,
+    'dbi:Pg:host='.$np->opts->slave.';port='.$np->opts->slave_port,
     $np->opts->slave_user,
     $np->opts->slave_password,
     );
@@ -132,6 +142,14 @@ if ( defined $slave_xlog_receive ) {
         critical => $np->opts->critical,
         );
     $np->add_message ( $code_receive, "Receive lag: ${diff_receive}kb;" );
+    # add performance data
+    $np->add_perfdata (
+        label => 'receive_lag',
+        value => $diff_receive,
+        uom => 'kB',
+        warning => $np->opts->warning,
+        critical => $np->opts->critical,
+        )
 } else {
     if ( defined $slave_xlog_replay ) {
         # print on all statuses
@@ -160,6 +178,14 @@ if ( defined $slave_xlog_replay ) {
         critical => $np->opts->critical,
         );
     $np->add_message ( $code_replay, "Replay lag: ${diff_replay}kb;" );
+    # add performance data
+    $np->add_perfdata (
+        label => 'receive_lag',
+        value => $diff_receive,
+        uom => 'kB',
+        warning => $np->opts->warning,
+        critical => $np->opts->critical,
+        )
 } else {
     for (OK, WARNING, CRITICAL) {
         $np->add_message ( $_, 'Wrong replay and receive statuses;' );
